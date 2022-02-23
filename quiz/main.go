@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -17,32 +16,52 @@ func main() {
 
 	flag.Parse()
 
-	log.Print("The file name is ", *questionsFileNamePtr)
-	questionsFile, err := os.Open(*questionsFileNamePtr)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Print("Reading quiz from file: ", *questionsFileNamePtr)
+	records, err := readQuiz(*questionsFileNamePtr)
+	check(err)
 
-	r := csv.NewReader(questionsFile)
-	in := bufio.NewReader(os.Stdin)
-	for {
-		rec, err := r.Read()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Fatal(err)
-		}
-
+	stdin := bufio.NewReader(os.Stdin)
+	for _, rec := range records {
 		fmt.Print(rec[0], "? ")
-		answer, err := in.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
+		answer, err := readAnswer(stdin)
+		check(err)
 
-		answer = strings.TrimSpace(answer)
 		if answer != rec[1] {
 			fmt.Printf("nope. %s != %s\n", answer, rec[1])
 		}
+	}
+}
+
+func readQuiz(file string) ([][]string, error) {
+	questionsFile, err := os.Open(file)
+	if err != nil {
+		return [][]string{}, err
+	}
+	defer closeFile(questionsFile)
+
+	r := csv.NewReader(questionsFile)
+	records, err := r.ReadAll()
+	if err != nil {
+		return [][]string{}, err
+	}
+
+	return records, nil
+}
+func readAnswer(reader *bufio.Reader) (string, error) {
+	result, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(result), nil
+}
+
+func closeFile(f *os.File) {
+	err := f.Close()
+	check(err)
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }
