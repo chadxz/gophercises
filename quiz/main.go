@@ -10,11 +10,6 @@ import (
 	"strings"
 )
 
-type resultset struct {
-	correct   int
-	incorrect int
-}
-
 func main() {
 	questionsFileNamePtr := flag.String("input", "problems.csv",
 		"File to read questions and answers from")
@@ -26,21 +21,23 @@ func main() {
 	check(err)
 
 	stdin := bufio.NewReader(os.Stdin)
-	results := resultset{}
+	results := struct {
+		correct int
+		total   int
+	}{}
+
 	for _, rec := range records {
 		fmt.Print(rec[0], "? ")
 		answer, err := readAnswer(stdin)
 		check(err)
 
+		results.total++
 		if answer == rec[1] {
 			results.correct++
-		} else {
-			results.incorrect++
 		}
 	}
 
-	fmt.Printf("%d/%d correct", results.correct,
-		results.correct+results.incorrect)
+	fmt.Printf("%d/%d correct\n", results.correct, results.total)
 }
 
 func readQuiz(file string) ([][]string, error) {
