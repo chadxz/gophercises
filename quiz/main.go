@@ -27,7 +27,7 @@ func main() {
 	}{}
 
 	for _, rec := range records {
-		fmt.Print(rec[0], "? ")
+		fmt.Printf("%s? ", rec[0])
 		answer, err := readAnswer(stdin)
 		check(err)
 
