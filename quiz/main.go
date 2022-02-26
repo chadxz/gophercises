@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type problem struct {
+	question string
+	answer   string
+}
+
 func main() {
 	inputFileNamePtr := flag.String("input", "problems.csv",
 		"File to read questions and answers from")
@@ -50,11 +55,6 @@ func readQuiz(file string) ([]problem, error) {
 	}
 
 	return parseProblems(records), nil
-}
-
-type problem struct {
-	question string
-	answer   string
 }
 
 func parseProblems(records [][]string) []problem {
